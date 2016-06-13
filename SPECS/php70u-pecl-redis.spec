@@ -243,6 +243,7 @@ fi
 
 
 %files
+%{!?_licensedir:%global license %%doc}
 %license NTS/COPYING
 %doc %{pecl_docdir}/%{pecl_name}
 %{pecl_xmldir}/%{pecl_name}.xml
@@ -262,6 +263,7 @@ fi
 - Latest upstream
 - Re-add scriptlets (file triggers not yet available in EL)
 - Filter auto-provides
+- Add %%license compatibility trick
 
 * Thu Jun  9 2016 Remi Collet <remi@fedoraproject.org> - 2.2.8-1
 - Update to 2.2.8 (stable)
