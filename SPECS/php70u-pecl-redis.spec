@@ -36,6 +36,9 @@ Requires:      php(api) = %{php_core_api}
 # php-pecl-igbinary missing php-pecl(igbinary)%{?_isa}
 Requires:      %{php_base}-pecl-igbinary%{?_isa}
 
+Requires(post):   %{php_base}-pear
+Requires(postun): %{php_base}-pear
+
 # provide the stock name
 Provides:      php-pecl-%{pecl_name} = %{version}
 Provides:      php-pecl-%{pecl_name}%{?_isa} = %{version}
@@ -219,6 +222,20 @@ exit $ret
 %endif
 
 
+%if 0%{?pecl_install:1}
+%post
+%{pecl_install} %{pecl_xmldir}/%{pecl_name}.xml >/dev/null || :
+%endif
+
+
+%if 0%{?pecl_uninstall:1}
+%postun
+if [ $1 -eq 0 ]; then
+    %{pecl_uninstall} %{pecl_name} >/dev/null || :
+fi
+%endif
+
+
 %files
 %license NTS/COPYING
 %doc %{pecl_docdir}/%{pecl_name}
@@ -237,6 +254,7 @@ exit $ret
 * Mon Jun 13 2016 Carl George <carl.george@rackspace.com> - 3.0.0-1.ius
 - Port from Fedora to IUS
 - Latest upstream
+- Re-add scriptlets (file triggers not yet available in EL)
 
 * Thu Jun  9 2016 Remi Collet <remi@fedoraproject.org> - 2.2.8-1
 - Update to 2.2.8 (stable)
