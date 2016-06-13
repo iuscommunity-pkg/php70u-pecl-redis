@@ -58,6 +58,12 @@ Provides:      %{php_base}-pecl(%{pecl_name})%{?_isa} = %{version}
 # conflict with the stock name
 Conflicts:     php-pecl-%{pecl_name} < %{version}
 
+# RPM 4.8
+%{?filter_provides_in: %filter_provides_in %{php_extdir}/.*\.so$}
+%{?filter_setup}
+# RPM 4.9
+%global __provides_exclude_from %{?__provides_exclude_from:%__provides_exclude_from|}%{php_extdir}/.*\\.so$
+
 
 %description
 The phpredis extension provides an API for communicating
@@ -255,6 +261,7 @@ fi
 - Port from Fedora to IUS
 - Latest upstream
 - Re-add scriptlets (file triggers not yet available in EL)
+- Filter auto-provides
 
 * Thu Jun  9 2016 Remi Collet <remi@fedoraproject.org> - 2.2.8-1
 - Update to 2.2.8 (stable)
