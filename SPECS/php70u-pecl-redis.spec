@@ -1,3 +1,5 @@
+# IUS spec file for php70u-pecl-redis, forked from:
+#
 # Fedora spec file for php-pecl-redis
 #
 # Copyright (c) 2012-2016 Remi Collet
@@ -10,19 +12,20 @@
 %global with_zts    0%{?__ztsphp:1}
 %global with_tests  0%{?_with_tests:1}
 %global ini_name    50-%{pecl_name}.ini
+%global php_base    php70u
 
 Summary:       Extension for communicating with the Redis key-value store
-Name:          php-pecl-redis
-Version:       2.2.8
-Release:       1%{?dist}
+Name:          %{php_base}-pecl-redis
+Version:       3.0.0
+Release:       1.ius%{?dist}
 License:       PHP
 Group:         Development/Languages
 URL:           http://pecl.php.net/package/redis
 Source0:       http://pecl.php.net/get/%{pecl_name}-%{version}.tgz
 
-BuildRequires: php-devel
-BuildRequires: php-pear
-BuildRequires: php-pecl-igbinary-devel
+BuildRequires: %{php_base}-devel
+BuildRequires: %{php_base}-pear
+BuildRequires: %{php_base}-pecl-igbinary-devel
 # to run Test suite
 %if %{with_tests}
 BuildRequires: redis >= 2.6
@@ -31,13 +34,26 @@ BuildRequires: redis >= 2.6
 Requires:      php(zend-abi) = %{php_zend_api}
 Requires:      php(api) = %{php_core_api}
 # php-pecl-igbinary missing php-pecl(igbinary)%{?_isa}
-Requires:      php-pecl-igbinary%{?_isa}
+Requires:      %{php_base}-pecl-igbinary%{?_isa}
 
-Obsoletes:     php-redis < %{version}
-Provides:      php-redis = %{version}-%{release}
-Provides:      php-redis%{?_isa} = %{version}-%{release}
+# provide the stock name
+Provides:      php-pecl-%{pecl_name} = %{version}
+Provides:      php-pecl-%{pecl_name}%{?_isa} = %{version}
+
+# provide the stock and IUS names without pecl
+Provides:      php-%{pecl_name} = %{version}-%{release}
+Provides:      php-%{pecl_name}%{?_isa} = %{version}-%{release}
+Provides:      %{php_base}-%{pecl_name} = %{version}-%{release}
+Provides:      %{php_base}-%{pecl_name}%{?_isa} = %{version}-%{release}
+
+# provide the stock and IUS names in pecl() format
 Provides:      php-pecl(%{pecl_name}) = %{version}
 Provides:      php-pecl(%{pecl_name})%{?_isa} = %{version}
+Provides:      %{php_base}-pecl(%{pecl_name}) = %{version}
+Provides:      %{php_base}-pecl(%{pecl_name})%{?_isa} = %{version}
+
+# conflict with the stock name
+Conflicts:     php-pecl-%{pecl_name} < %{version}
 
 
 %description
@@ -80,7 +96,7 @@ cat > %{ini_name} << 'EOF'
 ; Enable %{pecl_name} extension module
 extension = %{pecl_name}.so
 
-; phpredis can be used to store PHP sessions. 
+; phpredis can be used to store PHP sessions.
 ; To do this, uncomment and configure below
 
 ; RPM note : save_handler and save_path are defined
@@ -137,7 +153,7 @@ install -D -m 644 %{ini_name} %{buildroot}%{php_ztsinidir}/%{ini_name}
 %endif
 
 # Install the package XML file
-install -D -m 644 package.xml %{buildroot}%{pecl_xmldir}/%{name}.xml
+install -D -m 644 package.xml %{buildroot}%{pecl_xmldir}/%{pecl_name}.xml
 
 # Documentation
 cd NTS
@@ -206,7 +222,7 @@ exit $ret
 %files
 %license NTS/COPYING
 %doc %{pecl_docdir}/%{pecl_name}
-%{pecl_xmldir}/%{name}.xml
+%{pecl_xmldir}/%{pecl_name}.xml
 
 %{php_extdir}/%{pecl_name}.so
 %config(noreplace) %{php_inidir}/%{ini_name}
@@ -218,6 +234,10 @@ exit $ret
 
 
 %changelog
+* Mon Jun 13 2016 Carl George <carl.george@rackspace.com> - 3.0.0-1.ius
+- Port from Fedora to IUS
+- Latest upstream
+
 * Thu Jun  9 2016 Remi Collet <remi@fedoraproject.org> - 2.2.8-1
 - Update to 2.2.8 (stable)
 - don't install/register tests
