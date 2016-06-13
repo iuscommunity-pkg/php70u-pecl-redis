@@ -85,7 +85,7 @@ sed -e 's/role="test"/role="src"/' \
 # rename source folder
 mv %{pecl_name}-%{version} NTS
 
-cd NTS
+pushd NTS
 
 # Sanity check, really often broken
 extver=$(sed -n '/#define PHP_REDIS_VERSION/{s/.* "//;s/".*$//;p}' php_redis.h)
@@ -93,7 +93,7 @@ if test "x${extver}" != "x%{version}"; then
    : Error: Upstream extension version is ${extver}, expecting %{version}.
    exit 1
 fi
-cd ..
+popd
 
 %if %{with_zts}
 # duplicate for ZTS build
@@ -129,7 +129,7 @@ EOF
 
 
 %build
-cd NTS
+pushd NTS
 %{_bindir}/phpize
 %configure \
     --enable-redis \
@@ -137,9 +137,10 @@ cd NTS
     --enable-redis-igbinary \
     --with-php-config=%{_bindir}/php-config
 make %{?_smp_mflags}
+popd
 
 %if %{with_zts}
-cd ../ZTS
+pushd ZTS
 %{_bindir}/zts-phpize
 %configure \
     --enable-redis \
@@ -147,6 +148,7 @@ cd ../ZTS
     --enable-redis-igbinary \
     --with-php-config=%{_bindir}/zts-php-config
 make %{?_smp_mflags}
+popd
 %endif
 
 
@@ -165,10 +167,11 @@ install -D -p -m 644 %{ini_name} %{buildroot}%{php_ztsinidir}/%{ini_name}
 install -D -p -m 644 package.xml %{buildroot}%{pecl_xmldir}/%{pecl_name}.xml
 
 # Documentation
-cd NTS
+pushd NTS
 for i in $(grep 'role="doc"' ../package.xml | sed -e 's/^.*name="//;s/".*$//')
 do install -D -p -m 644 $i %{buildroot}%{pecl_docdir}/%{pecl_name}/$i
 done
+popd
 
 
 %check
@@ -186,7 +189,7 @@ done
 %endif
 
 %if %{with_tests}
-cd NTS/tests
+pushd NTS/tests
 
 # Launch redis server
 mkdir -p {run,log,lib}/redis
@@ -220,6 +223,8 @@ ret=0
 if [ -f run/redis.pid ]; then
    kill $(cat run/redis.pid)
 fi
+
+popd
 
 exit $ret
 
