@@ -14,6 +14,8 @@
 %global ini_name    50-%{pecl_name}.ini
 %global php_base    php70u
 
+%bcond_with    igbinary
+
 Summary:       Extension for communicating with the Redis key-value store
 Name:          %{php_base}-pecl-redis
 Version:       3.0.0
@@ -25,7 +27,9 @@ Source0:       http://pecl.php.net/get/%{pecl_name}-%{version}.tgz
 
 BuildRequires: %{php_base}-devel
 BuildRequires: %{php_base}-pear
+%if %{with igbinary}
 BuildRequires: %{php_base}-pecl-igbinary-devel
+%endif
 # to run Test suite
 %if %{with_tests}
 BuildRequires: redis >= 2.6
@@ -33,8 +37,9 @@ BuildRequires: redis >= 2.6
 
 Requires:      php(zend-abi) = %{php_zend_api}
 Requires:      php(api) = %{php_core_api}
-# php-pecl-igbinary missing php-pecl(igbinary)%{?_isa}
+%if %{with igbinary}
 Requires:      %{php_base}-pecl-igbinary%{?_isa}
+%endif
 
 Requires(post):   %{php_base}-pear
 Requires(postun): %{php_base}-pear
@@ -134,7 +139,7 @@ pushd NTS
 %configure \
     --enable-redis \
     --enable-redis-session \
-    --enable-redis-igbinary \
+%{?with_igbinary: --enable-redis-igbinary} \
     --with-php-config=%{_bindir}/php-config
 make %{?_smp_mflags}
 popd
@@ -145,7 +150,7 @@ pushd ZTS
 %configure \
     --enable-redis \
     --enable-redis-session \
-    --enable-redis-igbinary \
+%{?with_igbinary: --enable-redis-igbinary} \
     --with-php-config=%{_bindir}/zts-php-config
 make %{?_smp_mflags}
 popd
@@ -177,13 +182,13 @@ popd
 %check
 # simple module load test
 %{__php} --no-php-ini \
-    --define extension=igbinary.so \
+%{?with_igbinary: --define extension=igbinary.so} \
     --define extension=%{buildroot}%{php_extdir}/%{pecl_name}.so \
     --modules | grep %{pecl_name}
 
 %if %{with_zts}
 %{__ztsphp} --no-php-ini \
-    --define extension=igbinary.so \
+%{?with_igbinary: --define extension=igbinary.so} \
     --define extension=%{buildroot}%{php_ztsextdir}/%{pecl_name}.so \
     --modules | grep %{pecl_name}
 %endif
@@ -215,7 +220,7 @@ sed -e "s/6379/$port/" -i *.php
 # Run the test Suite
 ret=0
 %{__php} --no-php-ini \
-    --define extension=igbinary.so \
+%{?with_igbinary: --define extension=igbinary.so} \
     --define extension=%{buildroot}%{php_extdir}/%{pecl_name}.so \
     TestRedis.php || ret=1
 
@@ -270,6 +275,7 @@ fi
 - Filter auto-provides
 - Add %%license compatibility trick
 - Preserve timestamps when installing files
+- Disable igbinary support
 
 * Thu Jun  9 2016 Remi Collet <remi@fedoraproject.org> - 2.2.8-1
 - Update to 2.2.8 (stable)
