@@ -1,11 +1,6 @@
-clog
-*spec~
-/2.2.3.tar.gz
-/redis-2.2.3.tgz
-/2.2.4.tar.gz
-/redis-2.2.4.tgz
-/2.2.5.tar.gz
-/redis-2.2.5.tgz
-/2.2.7.tar.gz
-/redis-2.2.7.tgz
-/redis-2.2.8.tgz
+BUILD
+BUILDROOT
+MOCK
+RPMS
+SOURCES/*.tgz
+SRPMS
