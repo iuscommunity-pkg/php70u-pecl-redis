@@ -9,11 +9,11 @@
 # Please, preserve the changelog entries
 #
 %global pecl_name   redis
-%global with_zts    0%{?__ztsphp:1}
-%global with_tests  0%{?_with_tests:1}
 %global ini_name    50-%{pecl_name}.ini
 %global php_base    php70u
 
+%bcond_without zts
+%bcond_without tests
 %bcond_with    igbinary
 
 Summary:       Extension for communicating with the Redis key-value store
@@ -31,7 +31,7 @@ BuildRequires: %{php_base}-pear
 BuildRequires: %{php_base}-pecl-igbinary-devel
 %endif
 # to run Test suite
-%if %{with_tests}
+%if %{with tests}
 BuildRequires: redis >= 2.6
 %endif
 
@@ -100,7 +100,7 @@ if test "x${extver}" != "x%{version}"; then
 fi
 popd
 
-%if %{with_zts}
+%if %{with zts}
 # duplicate for ZTS build
 cp -pr NTS ZTS
 %endif
@@ -144,7 +144,7 @@ pushd NTS
 make %{?_smp_mflags}
 popd
 
-%if %{with_zts}
+%if %{with zts}
 pushd ZTS
 %{_bindir}/zts-phpize
 %configure \
@@ -162,7 +162,7 @@ popd
 make -C NTS install INSTALL_ROOT=%{buildroot}
 install -D -p -m 644 %{ini_name} %{buildroot}%{php_inidir}/%{ini_name}
 
-%if %{with_zts}
+%if %{with zts}
 # Install the ZTS stuff
 make -C ZTS install INSTALL_ROOT=%{buildroot}
 install -D -p -m 644 %{ini_name} %{buildroot}%{php_ztsinidir}/%{ini_name}
@@ -186,14 +186,14 @@ popd
     --define extension=%{buildroot}%{php_extdir}/%{pecl_name}.so \
     --modules | grep %{pecl_name}
 
-%if %{with_zts}
+%if %{with zts}
 %{__ztsphp} --no-php-ini \
 %{?with_igbinary: --define extension=igbinary.so} \
     --define extension=%{buildroot}%{php_ztsextdir}/%{pecl_name}.so \
     --modules | grep %{pecl_name}
 %endif
 
-%if %{with_tests}
+%if %{with tests}
 pushd NTS/tests
 
 # Launch redis server
@@ -261,7 +261,7 @@ fi
 %{php_extdir}/%{pecl_name}.so
 %config(noreplace) %{php_inidir}/%{ini_name}
 
-%if %{with_zts}
+%if %{with zts}
 %{php_ztsextdir}/%{pecl_name}.so
 %config(noreplace) %{php_ztsinidir}/%{ini_name}
 %endif
