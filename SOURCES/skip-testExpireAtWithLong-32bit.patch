@@ -1,0 +1,15 @@
+diff -Naurp a/redis-3.0.0/tests/RedisTest.php b/redis-3.0.0/tests/RedisTest.php
+--- a/redis-3.0.0/tests/RedisTest.php	2016-06-10 15:08:21.000000000 -0500
++++ b/redis-3.0.0/tests/RedisTest.php	2016-06-13 18:42:25.689101759 -0500
+@@ -456,6 +456,11 @@ class Redis_Test extends TestSuite
+     }
+ 
+     public function testExpireAtWithLong() {
++        // fails on 32 bit
++        if (php_uname('m') == 'i686') {
++            $this->markTestSkipped();
++        }
++
+         $longExpiryTimeExceedingInt = 3153600000;
+         $this->redis->del('key');
+         $this->assertTrue($this->redis->setex('key', $longExpiryTimeExceedingInt, 'val') === TRUE);

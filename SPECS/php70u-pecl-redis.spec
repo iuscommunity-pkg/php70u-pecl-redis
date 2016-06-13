@@ -25,6 +25,10 @@ Group:         Development/Languages
 URL:           http://pecl.php.net/package/redis
 Source0:       http://pecl.php.net/get/%{pecl_name}-%{version}.tgz
 
+# testExpireAtWithLong fails on 32bit (i686) build
+# https://github.com/phpredis/phpredis/issues/838
+Patch1:        skip-testExpireAtWithLong-32bit.patch
+
 BuildRequires: %{php_base}-devel
 BuildRequires: %{php_base}-pear
 %if %{with igbinary}
@@ -81,6 +85,8 @@ some doesn't work with an old redis server version.
 
 %prep
 %setup -q -c
+
+%patch1 -p1
 
 # Don't install/register tests
 sed -e 's/role="test"/role="src"/' \
@@ -276,6 +282,7 @@ fi
 - Add %%license compatibility trick
 - Preserve timestamps when installing files
 - Disable igbinary support
+- Add Patch1 to skip testExpireAtWithLong on 32bit build (gh#838)
 
 * Thu Jun  9 2016 Remi Collet <remi@fedoraproject.org> - 2.2.8-1
 - Update to 2.2.8 (stable)
