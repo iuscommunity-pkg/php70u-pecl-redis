@@ -153,21 +153,21 @@ make %{?_smp_mflags}
 %install
 # Install the NTS stuff
 make -C NTS install INSTALL_ROOT=%{buildroot}
-install -D -m 644 %{ini_name} %{buildroot}%{php_inidir}/%{ini_name}
+install -D -p -m 644 %{ini_name} %{buildroot}%{php_inidir}/%{ini_name}
 
 %if %{with_zts}
 # Install the ZTS stuff
 make -C ZTS install INSTALL_ROOT=%{buildroot}
-install -D -m 644 %{ini_name} %{buildroot}%{php_ztsinidir}/%{ini_name}
+install -D -p -m 644 %{ini_name} %{buildroot}%{php_ztsinidir}/%{ini_name}
 %endif
 
 # Install the package XML file
-install -D -m 644 package.xml %{buildroot}%{pecl_xmldir}/%{pecl_name}.xml
+install -D -p -m 644 package.xml %{buildroot}%{pecl_xmldir}/%{pecl_name}.xml
 
 # Documentation
 cd NTS
 for i in $(grep 'role="doc"' ../package.xml | sed -e 's/^.*name="//;s/".*$//')
-do install -Dpm 644 $i %{buildroot}%{pecl_docdir}/%{pecl_name}/$i
+do install -D -p -m 644 $i %{buildroot}%{pecl_docdir}/%{pecl_name}/$i
 done
 
 
@@ -264,6 +264,7 @@ fi
 - Re-add scriptlets (file triggers not yet available in EL)
 - Filter auto-provides
 - Add %%license compatibility trick
+- Preserve timestamps when installing files
 
 * Thu Jun  9 2016 Remi Collet <remi@fedoraproject.org> - 2.2.8-1
 - Update to 2.2.8 (stable)
