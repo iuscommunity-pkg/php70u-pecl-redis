@@ -208,17 +208,8 @@ sed -e "s:/^pidfile.*$:/pidfile $PWD/run/redis.pid:" \
     -e "s:/var:$PWD:" \
     -e "/daemonize/s/no/yes/" \
     /etc/redis.conf >redis.conf
-# port number to allow 32/64 build at same time
-# and avoid conflict with a possible running server
-%if 0%{?__isa_bits}
-port=$(expr %{__isa_bits} + 6350)
-%else
-%ifarch x86_64
-port=6414
-%else
-port=6382
-%endif
-%endif
+# use a random port to avoid conflicts
+port=%(shuf -i 6000-6999 -n 1)
 sed -e "s/6379/$port/" -i redis.conf
 sed -e "s/6379/$port/" -i *.php
 %{_bindir}/redis-server ./redis.conf
@@ -283,6 +274,7 @@ fi
 - Preserve timestamps when installing files
 - Disable igbinary support
 - Add Patch1 to skip testExpireAtWithLong on 32bit build (gh#838)
+- Use a random port in %%check to avoid conflicts
 
 * Thu Jun  9 2016 Remi Collet <remi@fedoraproject.org> - 2.2.8-1
 - Update to 2.2.8 (stable)
