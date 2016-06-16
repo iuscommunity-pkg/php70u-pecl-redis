@@ -19,7 +19,7 @@
 Summary:       Extension for communicating with the Redis key-value store
 Name:          %{php_base}-pecl-redis
 Version:       3.0.0
-Release:       1.ius%{?dist}
+Release:       2.ius%{?dist}
 License:       PHP
 Group:         Development/Languages
 URL:           http://pecl.php.net/package/redis
@@ -67,11 +67,9 @@ Provides:      %{php_base}-pecl(%{pecl_name})%{?_isa} = %{version}
 # conflict with the stock name
 Conflicts:     php-pecl-%{pecl_name} < %{version}
 
-# RPM 4.8
 %{?filter_provides_in: %filter_provides_in %{php_extdir}/.*\.so$}
+%{?filter_provides_in: %filter_provides_in %{php_ztsextdir}/.*\.so$}
 %{?filter_setup}
-# RPM 4.9
-%global __provides_exclude_from %{?__provides_exclude_from:%__provides_exclude_from|}%{php_extdir}/.*\\.so$
 
 
 %description
@@ -265,6 +263,9 @@ fi
 
 
 %changelog
+* Thu Jun 16 2016 Carl George <carl.george@rackspace.com> - 3.0.0-2.ius
+- Clean up auto-provides filters
+
 * Mon Jun 13 2016 Carl George <carl.george@rackspace.com> - 3.0.0-1.ius
 - Port from Fedora to IUS
 - Latest upstream
