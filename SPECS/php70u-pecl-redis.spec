@@ -16,56 +16,50 @@
 %bcond_without tests
 %bcond_with    igbinary
 
-Summary:       Extension for communicating with the Redis key-value store
-Name:          %{php_base}-pecl-redis
-Version:       3.0.0
-Release:       2.ius%{?dist}
-License:       PHP
-Group:         Development/Languages
-URL:           http://pecl.php.net/package/redis
-Source0:       http://pecl.php.net/get/%{pecl_name}-%{version}.tgz
+Summary:        Extension for communicating with the Redis key-value store
+Name:           %{php_base}-pecl-redis
+Version:        3.0.0
+Release:        2.ius%{?dist}
+License:        PHP
+Group:          Development/Languages
+URL:            http://pecl.php.net/package/redis
+Source0:        http://pecl.php.net/get/%{pecl_name}-%{version}.tgz
 
 # testExpireAtWithLong fails on 32bit (i686) build
 # https://github.com/phpredis/phpredis/issues/838
-Patch1:        skip-testExpireAtWithLong-32bit.patch
+Patch1:         skip-testExpireAtWithLong-32bit.patch
 
-BuildRequires: %{php_base}-devel
-BuildRequires: %{php_base}-pear
-%if %{with igbinary}
-BuildRequires: %{php_base}-pecl-igbinary-devel
-%endif
+BuildRequires:  %{php_base}-devel
+BuildRequires:  %{php_base}-pear
+%{?with_igbinary:BuildRequires: %{php_base}-pecl-igbinary-devel}
 # to run Test suite
-%if %{with tests}
-BuildRequires: redis >= 2.6
-%endif
+%{?with_tests:BuildRequires: redis >= 2.6}
 
-Requires:      php(zend-abi) = %{php_zend_api}
-Requires:      php(api) = %{php_core_api}
-%if %{with igbinary}
-Requires:      %{php_base}-pecl-igbinary%{?_isa}
-%endif
+Requires:       php(zend-abi) = %{php_zend_api}
+Requires:       php(api) = %{php_core_api}
+%{?with_igbinary:Requires: %{php_base}-pecl-igbinary%{?_isa}}
 
 Requires(post):   %{php_base}-pear
 Requires(postun): %{php_base}-pear
 
 # provide the stock name
-Provides:      php-pecl-%{pecl_name} = %{version}
-Provides:      php-pecl-%{pecl_name}%{?_isa} = %{version}
+Provides:       php-pecl-%{pecl_name} = %{version}
+Provides:       php-pecl-%{pecl_name}%{?_isa} = %{version}
 
 # provide the stock and IUS names without pecl
-Provides:      php-%{pecl_name} = %{version}-%{release}
-Provides:      php-%{pecl_name}%{?_isa} = %{version}-%{release}
-Provides:      %{php_base}-%{pecl_name} = %{version}-%{release}
-Provides:      %{php_base}-%{pecl_name}%{?_isa} = %{version}-%{release}
+Provides:       php-%{pecl_name} = %{version}-%{release}
+Provides:       php-%{pecl_name}%{?_isa} = %{version}-%{release}
+Provides:       %{php_base}-%{pecl_name} = %{version}-%{release}
+Provides:       %{php_base}-%{pecl_name}%{?_isa} = %{version}-%{release}
 
 # provide the stock and IUS names in pecl() format
-Provides:      php-pecl(%{pecl_name}) = %{version}
-Provides:      php-pecl(%{pecl_name})%{?_isa} = %{version}
-Provides:      %{php_base}-pecl(%{pecl_name}) = %{version}
-Provides:      %{php_base}-pecl(%{pecl_name})%{?_isa} = %{version}
+Provides:       php-pecl(%{pecl_name}) = %{version}
+Provides:       php-pecl(%{pecl_name})%{?_isa} = %{version}
+Provides:       %{php_base}-pecl(%{pecl_name}) = %{version}
+Provides:       %{php_base}-pecl(%{pecl_name})%{?_isa} = %{version}
 
 # conflict with the stock name
-Conflicts:     php-pecl-%{pecl_name} < %{version}
+Conflicts:      php-pecl-%{pecl_name} < %{version}
 
 %{?filter_provides_in: %filter_provides_in %{php_extdir}/.*\.so$}
 %{?filter_provides_in: %filter_provides_in %{php_ztsextdir}/.*\.so$}
@@ -233,22 +227,17 @@ exit $ret
 %endif
 
 
-%if 0%{?pecl_install:1}
 %post
 %{pecl_install} %{pecl_xmldir}/%{pecl_name}.xml >/dev/null || :
-%endif
 
 
-%if 0%{?pecl_uninstall:1}
 %postun
 if [ $1 -eq 0 ]; then
     %{pecl_uninstall} %{pecl_name} >/dev/null || :
 fi
-%endif
 
 
 %files
-%{!?_licensedir:%global license %%doc}
 %license NTS/COPYING
 %doc %{pecl_docdir}/%{pecl_name}
 %{pecl_xmldir}/%{pecl_name}.xml
