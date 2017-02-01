@@ -18,16 +18,12 @@
 
 Summary:        Extension for communicating with the Redis key-value store
 Name:           %{php_base}-pecl-redis
-Version:        3.0.0
-Release:        2.ius%{?dist}
+Version:        3.1.1
+Release:        1.ius%{?dist}
 License:        PHP
 Group:          Development/Languages
 URL:            http://pecl.php.net/package/redis
 Source0:        http://pecl.php.net/get/%{pecl_name}-%{version}.tgz
-
-# testExpireAtWithLong fails on 32bit (i686) build
-# https://github.com/phpredis/phpredis/issues/838
-Patch1:         skip-testExpireAtWithLong-32bit.patch
 
 BuildRequires:  %{php_base}-devel
 BuildRequires:  %{php_base}-pear
@@ -77,8 +73,6 @@ some doesn't work with an old redis server version.
 
 %prep
 %setup -q -c
-
-%patch1 -p1
 
 # Don't install/register tests
 sed -e 's/role="test"/role="src"/' \
@@ -195,16 +189,18 @@ popd
 pushd NTS/tests
 
 # Launch redis server
-mkdir -p {run,log,lib}/redis
-sed -e "s:/^pidfile.*$:/pidfile $PWD/run/redis.pid:" \
-    -e "s:/var:$PWD:" \
-    -e "/daemonize/s/no/yes/" \
-    /etc/redis.conf >redis.conf
+mkdir -p data
+pidfile=$PWD/redis.pid
 # use a random port to avoid conflicts
 port=%(shuf -i 6000-6999 -n 1)
-sed -e "s/6379/$port/" -i redis.conf
 sed -e "s/6379/$port/" -i *.php
-%{_bindir}/redis-server ./redis.conf
+%{_bindir}/redis-server   \
+    --bind      127.0.0.1      \
+    --port      $port          \
+    --daemonize yes            \
+    --logfile   $PWD/redis.log \
+    --dir       $PWD/data      \
+    --pidfile   $pidfile
 
 # Run the test Suite
 ret=0
@@ -214,8 +210,8 @@ ret=0
     TestRedis.php || ret=1
 
 # Cleanup
-if [ -f run/redis.pid ]; then
-   kill $(cat run/redis.pid)
+if [ -f $pidfile ]; then
+   %{_bindir}/redis-cli -p $port shutdown
 fi
 
 popd
@@ -252,6 +248,12 @@ fi
 
 
 %changelog
+* Wed Feb 01 2017 Ben Harper <ben.harper@rackspace.com> - 3.1.1-1.ius
+- Latest upstream
+- remove Patch1, fixed upstream
+- changes to Launch redis server and Cleanup from Fedora:
+  http://pkgs.fedoraproject.org/cgit/rpms/php-pecl-redis.git/commit/?id=676cb4cd0326b8e5e9cf49ed3c7cfef31d804543
+
 * Thu Jun 16 2016 Carl George <carl.george@rackspace.com> - 3.0.0-2.ius
 - Clean up auto-provides filters
 
