@@ -8,51 +8,50 @@
 #
 # Please, preserve the changelog entries
 #
-%global pecl_name   redis
-%global ini_name    50-%{pecl_name}.ini
-%global php_base    php70u
+%global pecl_name redis
+%global ini_name  50-%{pecl_name}.ini
+%global php       php70u
 
 %bcond_without zts
 %bcond_without tests
 %bcond_without igbinary
 
 Summary:        Extension for communicating with the Redis key-value store
-Name:           %{php_base}-pecl-redis
+Name:           %{php}-pecl-%{pecl_name}
 Version:        3.1.3
 Release:        2.ius%{?dist}
 License:        PHP
 Group:          Development/Languages
-URL:            http://pecl.php.net/package/redis
+URL:            http://pecl.php.net/package/%{pecl_name}
 Source0:        http://pecl.php.net/get/%{pecl_name}-%{version}.tgz
 
-BuildRequires:  %{php_base}-devel
-BuildRequires:  %{php_base}-pear
-%{?with_igbinary:BuildRequires: %{php_base}-pecl-igbinary-devel}
-# to run Test suite
+BuildRequires:  %{php}-devel
+BuildRequires:  %{php}-pear
+%{?with_igbinary:BuildRequires: %{php}-pecl-igbinary-devel}
 %{?with_tests:BuildRequires: redis >= 2.6}
 
 Requires:       php(zend-abi) = %{php_zend_api}
 Requires:       php(api) = %{php_core_api}
-%{?with_igbinary:Requires: %{php_base}-pecl-igbinary%{?_isa}}
+%{?with_igbinary:Requires: %{php}-pecl-igbinary%{?_isa}}
 
-Requires(post):   %{php_base}-pear
-Requires(postun): %{php_base}-pear
+Requires(post): %{php}-pear
+Requires(postun): %{php}-pear
 
 # provide the stock name
 Provides:       php-pecl-%{pecl_name} = %{version}
 Provides:       php-pecl-%{pecl_name}%{?_isa} = %{version}
 
 # provide the stock and IUS names without pecl
-Provides:       php-%{pecl_name} = %{version}-%{release}
-Provides:       php-%{pecl_name}%{?_isa} = %{version}-%{release}
-Provides:       %{php_base}-%{pecl_name} = %{version}-%{release}
-Provides:       %{php_base}-%{pecl_name}%{?_isa} = %{version}-%{release}
+Provides:       php-%{pecl_name} = %{version}
+Provides:       php-%{pecl_name}%{?_isa} = %{version}
+Provides:       %{php}-%{pecl_name} = %{version}
+Provides:       %{php}-%{pecl_name}%{?_isa} = %{version}
 
 # provide the stock and IUS names in pecl() format
 Provides:       php-pecl(%{pecl_name}) = %{version}
 Provides:       php-pecl(%{pecl_name})%{?_isa} = %{version}
-Provides:       %{php_base}-pecl(%{pecl_name}) = %{version}
-Provides:       %{php_base}-pecl(%{pecl_name})%{?_isa} = %{version}
+Provides:       %{php}-pecl(%{pecl_name}) = %{version}
+Provides:       %{php}-pecl(%{pecl_name})%{?_isa} = %{version}
 
 # conflict with the stock name
 Conflicts:      php-pecl-%{pecl_name} < %{version}
@@ -82,23 +81,16 @@ sed -e 's/role="test"/role="src"/' \
 # rename source folder
 mv %{pecl_name}-%{version} NTS
 
-pushd NTS
-
 # Sanity check, really often broken
-extver=$(sed -n '/#define PHP_REDIS_VERSION/{s/.* "//;s/".*$//;p}' php_redis.h)
+extver=$(sed -n '/#define PHP_REDIS_VERSION/{s/.* "//;s/".*$//;p}' NTS/php_redis.h)
 if test "x${extver}" != "x%{version}"; then
    : Error: Upstream extension version is ${extver}, expecting %{version}.
    exit 1
 fi
-popd
 
-%if %{with zts}
-# duplicate for ZTS build
-cp -pr NTS ZTS
-%endif
+%{?with_zts:cp -pr NTS ZTS}
 
-# Drop in the bit of configuration
-cat > %{ini_name} << 'EOF'
+cat > %{ini_name} << EOF
 ; Enable %{pecl_name} extension module
 extension = %{pecl_name}.so
 
@@ -150,20 +142,16 @@ popd
 
 
 %install
-# Install the NTS stuff
 make -C NTS install INSTALL_ROOT=%{buildroot}
-install -D -p -m 644 %{ini_name} %{buildroot}%{php_inidir}/%{ini_name}
+install -D -m 644 %{ini_name} %{buildroot}%{php_inidir}/%{ini_name}
 
 %if %{with zts}
-# Install the ZTS stuff
 make -C ZTS install INSTALL_ROOT=%{buildroot}
-install -D -p -m 644 %{ini_name} %{buildroot}%{php_ztsinidir}/%{ini_name}
+install -D -m 644 %{ini_name} %{buildroot}%{php_ztsinidir}/%{ini_name}
 %endif
 
-# Install the package XML file
-install -D -p -m 644 package.xml %{buildroot}%{pecl_xmldir}/%{pecl_name}.xml
+install -D -m 644 package.xml %{buildroot}%{pecl_xmldir}/%{pecl_name}.xml
 
-# Documentation
 pushd NTS
 for i in $(grep 'role="doc"' ../package.xml | sed -e 's/^.*name="//;s/".*$//')
 do install -D -p -m 644 $i %{buildroot}%{pecl_docdir}/%{pecl_name}/$i
@@ -172,7 +160,6 @@ popd
 
 
 %check
-# simple module load test
 %{__php} --no-php-ini \
 %{?with_igbinary: --define extension=igbinary.so} \
     --define extension=%{buildroot}%{php_extdir}/%{pecl_name}.so \
@@ -193,7 +180,6 @@ mkdir -p data
 pidfile=$PWD/redis.pid
 # use a random port to avoid conflicts
 port=%(shuf -i 6000-6999 -n 1)
-sed -e "s/6379/$port/" -i *.php
 %{_bindir}/redis-server   \
     --bind      127.0.0.1      \
     --port      $port          \
@@ -201,6 +187,8 @@ sed -e "s/6379/$port/" -i *.php
     --logfile   $PWD/redis.log \
     --dir       $PWD/data      \
     --pidfile   $pidfile
+
+sed -e "s/6379/$port/" -i RedisTest.php
 
 # Run the test Suite
 ret=0
@@ -215,7 +203,6 @@ if [ -f $pidfile ]; then
 fi
 
 popd
-
 exit $ret
 
 %else
