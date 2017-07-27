@@ -14,12 +14,12 @@
 
 %bcond_without zts
 %bcond_without tests
-%bcond_with    igbinary
+%bcond_without igbinary
 
 Summary:        Extension for communicating with the Redis key-value store
 Name:           %{php_base}-pecl-redis
 Version:        3.1.3
-Release:        1.ius%{?dist}
+Release:        2.ius%{?dist}
 License:        PHP
 Group:          Development/Languages
 URL:            http://pecl.php.net/package/redis
@@ -248,6 +248,9 @@ fi
 
 
 %changelog
+* Thu Jul 27 2017 Carl George <carl@george.computer> - 3.1.3-2.ius
+- Enable igbinary
+
 * Mon Jul 17 2017 Ben Harper <ben.harper@rackspace.com> - 3.1.3-1.ius
 - Latest upstream
 
